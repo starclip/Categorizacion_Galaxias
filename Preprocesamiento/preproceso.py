@@ -28,17 +28,27 @@ def obtener_imagenes(imagenes):
         imagen = cv2.imread(image, 1);
         imagenes.append(imagen);
         i += 1;
+
+# Función ReLu
+def Relu(x):
+    return x * (x > 0)
         
 # Obtener las imagenes en gris.
 def obtener_gris(imagenes, imagenes_gray):
     global cont;
-    cont = 0;
+    cont = 1;
+    kernel = np.ones((5,5),np.uint8)
     for i in imagenes:
         img_gray = cv2.cvtColor(i, cv2.COLOR_BGR2GRAY);
         blur = cv2.GaussianBlur(img_gray,(5,5),0)
-        imagenes_gray.append(blur);
+        ret, th = cv2.threshold(blur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        erosion = cv2.erode(th, kernel,3) 
+        opening = cv2.morphologyEx(erosion, cv2.MORPH_OPEN, (5,5))
+        denoising = cv2.fastNlMeansDenoising(opening, None, 10, 21, 7)
+        relu = Relu(opening)
+        imagenes_gray.append(relu);
         name = "DR14-Gray/gray_image" + str(cont) + ".jpg";
-        cv2.imwrite(name, blur);
+        cv2.imwrite(name, relu);
         cont += 1;
         
 
